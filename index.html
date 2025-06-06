@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 Channels</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e1e2c, #2d2d44);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--success), var(--info));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        header p {
+            color: var(--light-gray);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .input-section {
+            background: rgba(30, 30, 44, 0.7);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .btn-success:hover {
+            background: #3ab4d6;
+            transform: translateY(-2px);
+        }
+        
+        .player-container {
+            background: rgba(30, 30, 44, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        #current-channel {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        #player {
+            border-radius: 8px;
+            overflow: hidden;
+            background: black;
+        }
+        
+        .categories-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .category {
+            background: rgba(30, 30, 44, 0.7);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .category:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-header {
+            padding: 18px 20px;
+            background: rgba(67, 97, 238, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .category-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .channel-count {
+            background: var(--info);
+            color: var(--dark);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .channel-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .channel-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .channel-item:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .channel-item:last-child {
+            border-bottom: none;
+        }
+        
+        .channel-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .channel-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .play-btn {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-btn:hover {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--success);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            background: var(--dark);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--success);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .categories-container {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>M3U8 Channel Organizer</h1>
+            <p>Enter the URL of an M3U8 playlist or use the demo button to explore categorized channels. Click any channel to play it in fullscreen mode.</p>
+        </header>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="playlist-url" placeholder="Enter M3U8 playlist URL...">
+                <button class="btn btn-primary" id="fetch-btn">Load Playlist</button>
+                <button class="btn btn-success" id="demo-btn">Use Demo Playlist</button>
+            </div>
+        </div>
+        
+        <div class="player-container">
+            <div class="player-header">
+                <h2>Channel Player</h2>
+                <div id="current-channel">No channel selected</div>
+            </div>
+            <div id="player"></div>
+        </div>
+        
+        <div id="categories-container" class="categories-container">
+            <!-- Categories will be populated here -->
+            <div class="empty-state">
+                <h3>No channels loaded</h3>
+                <p>Enter a playlist URL or use the demo button to get started</p>
+            </div>
+        </div>
+        
+        <div class="notification" id="notification">This is a notification</div>
+        
+        <footer>
+            <p>© 2023 M3U8 Channel Organizer | Built with Plyr Player</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script>
+        // Define our channel mappings
+        const MAPPINGS = {
+            'bein Sport': [
+                'bein sport', 'beIN SPORT', 'bein sports', 'bein max', 'beIN LIGA', 
+                'bein sports xtra', 'bein nba', 'bein global', 'bein news'
+            ],
+            'SSC Sports': [
+                'ssc sport', 'ssc extra', 'ad sport premium', 'serie a', 'ssc news'
+            ],
+            'Sports': [
+                'sport', 'sports', 'alkass', 'dubai sports', 'arena sport', 'super sport',
+                'bt sport', 'espn', 'wwe', 'f1', 'motogp', 'olympic', 'nba', 'grandstand'
+            ],
+            'News': [
+                'news', 'al jazeera', 'bbc', 'cnn', 'sky news', 'al arabiya', 'alhadath',
+                'france 24', 'dw arabic', 'rt arabic', 'trt', 'euronews', 'asharq'
+            ],
+            'International': [
+                'france', 'spain', 'usa', 'uk', 'deutsch', 'latino', 'portugal', 'serb',
+                'turkey', 'pt:', 'fr:', 'es:', 'us:', 'ca:', 'arg:', 'tr:', 'za:'
+            ],
+            'Regional': [
+                'egypt', 'palestine', 'libya', 'maroc', 'tunisia', 'algeria', 'syria',
+                'lebanon', 'iraq', 'libyan', 'algerian', 'tunis', 'morocco', 'libye'
+            ],
+            'Entertainment': [
+                'series', 'drama', 'entertainment', 'variety', 'comedy', 'masrahiyat',
+                'theater', 'showtime', 'star world', 'paramount', 'syfy', 'rtl9'
+            ],
+            'OSN': [
+                'osn', 'star movies', 'discovery', 'nat geo', 'disney', 'national geographic',
+                'animal planet', 'bbc earth', 'history channel', 'crime district'
+            ],
+            'MBC': [
+                'mbc ', 'mbc_', 'mbc+', 'mbc1', 'mbc2', 'mbc3', 'mbc4', 'mbc bollywood',
+                'mbc drama', 'mbc action', 'mbc max', 'mbc iraq'
+            ],
+            'Movies': [
+                'movie', 'cinema', 'aflam', 'boxoffice', 'netflix', 'hbo', 'mgm', 'marvel',
+                'thriller', 'action', 'horror', 'romance', 'war', 'western', 'discovery family'
+            ],
+            'Kids': [
+                'kids', 'child', 'jeem', 'baraeem', 'cartoon', 'junior', 'disney jr',
+                'boomerang', 'piwi', 'tiji', 'gulli', 'nickelodeon', 'toonami'
+            ],
+            'Quran': [
+                'quran', 'qraan', 'القرءان', 'hadeth', 'majd quraan', 'radio مشارى',
+                'radio احمد', 'radio عبدا الباسط', 'إذاعة القرآن', 'راديو'
+            ],
+            'Radio': [
+                'radio', 'إذاعة', 'راديو', 'fm', 'mega fm', 'nagham fm', 'umm kulthum'
+            ]
+        };
+        
+        // Get DOM elements
+        const playlistUrlInput = document.getElementById('playlist-url');
+        const fetchBtn = document.getElementById('fetch-btn');
+        const demoBtn = document.getElementById('demo-btn');
+        const categoriesContainer = document.getElementById('categories-container');
+        const currentChannelEl = document.getElementById('current-channel');
+        const notification = document.getElementById('notification');
+        
+        // Initialize Plyr player
+        const player = new Plyr('#player', {
+            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
+            fullscreen: { enabled: true, fallback: true, iosNative: true },
+            hideControls: false
+        });
+        
+        // Player event listeners
+        player.on('play', () => {
+            // Enter fullscreen when playback starts
+            if (!player.fullscreen.active) {
+                player.fullscreen.enter();
+            }
+        });
+        
+        // Show notification function
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = 'notification';
+            notification.classList.add(isError ? 'error' : 'show');
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Parse M3U8 content
+        function parseM3U8(content) {
+            const channels = [];
+            const lines = content.split('\n');
+            
+            let currentChannel = {};
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('#EXTINF:')) {
+                    // Extract channel info
+                    const params = line.substring(8).split(',');
+                    const attrs = params[0].split(' ');
+                    const name = params.slice(1).join(',').trim();
+                    
+                    currentChannel = {
+                        name,
+                        url: '',
+                        logo: '',
+                        group: ''
+                    };
+                    
+                    // Extract attributes
+                    for (const attr of attrs) {
+                        if (attr.includes('=')) {
+                            const [key, value] = attr.split('=');
+                            const cleanValue = value.replace(/"/g, '');
+                            
+                            if (key === 'tvg-logo') {
+                                currentChannel.logo = cleanValue;
+                            } else if (key === 'group-title') {
+                                currentChannel.group = cleanValue;
+                            }
+                        }
+                    }
+                } else if (line.startsWith('http')) {
+                    // This is the stream URL
+                    currentChannel.url = line;
+                    channels.push(currentChannel);
+                    currentChannel = {};
+                }
+            }
+            
+            return channels;
+        }
+        
+        // Categorize channels
+        function categorizeChannels(channels) {
+            const categories = {};
+            
+            // Initialize categories from MAPPINGS
+            for (const category in MAPPINGS) {
+                categories[category] = [];
+            }
+            
+            // Add an "Uncategorized" category
+            categories['Uncategorized'] = [];
+            
+            // Categorize each channel
+            for (const channel of channels) {
+                let categoryFound = false;
+                
+                for (const [category, keywords] of Object.entries(MAPPINGS)) {
+                    for (const keyword of keywords) {
+                        if (channel.name.toLowerCase().includes(keyword.toLowerCase())) {
+                            categories[category].push(channel);
+                            categoryFound = true;
+                            break;
+                        }
+                    }
+                    if (categoryFound) break;
+                }
+                
+                if (!categoryFound) {
+                    categories['Uncategorized'].push(channel);
+                }
+            }
+            
+            return categories;
+        }
+        
+        // Render categorized channels
+        function renderCategories(categorizedChannels) {
+            categoriesContainer.innerHTML = '';
+            
+            for (const [category, channels] of Object.entries(categorizedChannels)) {
+                if (channels.length === 0) continue;
+                
+                const categoryEl = document.createElement('div');
+                categoryEl.className = 'category';
+                
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerHTML = `
+                    <div class="category-icon">${category.charAt(0)}</div>
+                    <span>${category}</span>
+                `;
+                
+                const count = document.createElement('div');
+                count.className = 'channel-count';
+                count.textContent = `${channels.length} channels`;
+                
+                header.appendChild(title);
+                header.appendChild(count);
+                
+                const channelList = document.createElement('div');
+                channelList.className = 'channel-list';
+                
+                // Sort channels alphabetically
+                channels.sort((a, b) => a.name.localeCompare(b.name));
+                
+                for (const channel of channels) {
+                    const channelItem = document.createElement('div');
+                    channelItem.className = 'channel-item';
+                    channelItem.dataset.url = channel.url;
+                    channelItem.dataset.name = channel.name;
+                    
+                    channelItem.innerHTML = `
+                        <div class="channel-logo">${channel.name.charAt(0)}</div>
+                        <div class="channel-name">${channel.name}</div>
+                        <button class="play-btn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4 3.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zM4 6a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 6zm.5 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9z"/>
+                                <path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zm13 2v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1z"/>
+                            </svg>
+                        </button>
+                    `;
+                    
+                    channelItem.addEventListener('click', () => playChannel(channel));
+                    channelList.appendChild(channelItem);
+                }
+                
+                categoryEl.appendChild(header);
+                categoryEl.appendChild(channelList);
+                categoriesContainer.appendChild(categoryEl);
+            }
+        }
+        
+        // Play a channel
+        function playChannel(channel) {
+            currentChannelEl.textContent = channel.name;
+            
+            // Set player source
+            player.source = {
+                type: 'video',
+                sources: [{
+                    src: channel.url,
+                    type: 'application/x-mpegURL'
+                }]
+            };
+            
+            // Play the channel
+            player.play();
+            
+            // Show notification
+            showNotification(`Now playing: ${channel.name}`);
+        }
+        
+        // Fetch and process M3U8
+        async function fetchPlaylist(url) {
+            try {
+                // Show loading state
+                categoriesContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading playlist...</p>
+                    </div>
+                `;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch playlist: ${response.status} ${response.statusText}`);
+                }
+                
+                const content = await response.text();
+                const channels = parseM3U8(content);
+                const categorizedChannels = categorizeChannels(channels);
+                
+                renderCategories(categorizedChannels);
+                
+                // Show notification
+                showNotification(`Loaded ${channels.length} channels`);
+                
+            } catch (error) {
+                console.error('Error fetching playlist:', error);
+                categoriesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error Loading Playlist</h3>
+                        <p>${error.message}</p>
+                        <p>Please check the URL and try again</p>
+                    </div>
+                `;
+                showNotification('Error loading playlist', true);
+            }
+        }
+        
+        // Event listeners
+        fetchBtn.addEventListener('click', () => {
+            const url = playlistUrlInput.value.trim();
+            if (url) {
+                fetchPlaylist(url);
+            } else {
+                showNotification('Please enter a playlist URL', true);
+            }
+        });
+        
+        demoBtn.addEventListener('click', () => {
+            // Use a sample playlist for demo purposes
+            playlistUrlInput.value = 'https://example.com/sample.m3u8';
+            showNotification('Using demo playlist. Note: Actual streaming requires a valid M3U8 URL.');
+            
+            // Since we can't fetch an external resource in this example, we'll simulate data
+            simulateDemoData();
+        });
+        
+        // Simulate demo data for preview purposes
+        function simulateDemoData() {
+            const demoChannels = [];
+            const groups = Object.keys(MAPPINGS);
+            
+            // Generate demo channels
+            for (let i = 0; i < 120; i++) {
+                const group = groups[Math.floor(Math.random() * groups.length)];
+                const keywords = MAPPINGS[group];
+                const keyword = keywords[Math.floor(Math.random() * keywords.length)];
+                
+                demoChannels.push({
+                    name: `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Channel ${i+1}`,
+                    url: `https://example.com/stream${i+1}.m3u8`,
+                    logo: '',
+                    group: group
+                });
+            }
+            
+            // Categorize and render
+            const categorizedChannels = categorizeChannels(demoChannels);
+            renderCategories(categorizedChannels);
+            
+            // Show notification
+            showNotification('Loaded 120 demo channels');
+        }
+        
+        // Check for URL parameter
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const playlistUrl = params.get('url');
+            
+            if (playlistUrl) {
+                playlistUrlInput.value = playlistUrl;
+                fetchPlaylist(playlistUrl);
+            }
+        }
+        
+        // Initialize
+        checkUrlParams();
+    </script>
+</body>
+</html>
